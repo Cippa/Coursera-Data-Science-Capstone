@@ -39,4 +39,6 @@ prediction
 - Then, the submit button has to be pressed
 - On the rigth side the output will display the three most likely words according 
 to the Katz's model together with their associated probability.  
-![alt text](AppScreenshot.jpg){width=70%}
+![alt text](AppScreenshot.jpg){width=70%}  
+Full code available on [GitHub](https://github.com/Cippa/Coursera-Data-Science-Capstone)  
+
