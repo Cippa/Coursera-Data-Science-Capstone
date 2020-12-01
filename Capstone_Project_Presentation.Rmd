@@ -1,0 +1,42 @@
+---
+title: "Coursera Data Science Specialization - Capstone Project presentation"
+author: "Fulvio Barizzone"
+date: "30/11/2020"
+output:
+  ioslides_presentation: default
+  slidy_presentation: default
+transition: rotate
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Goal of the project
+
+The goal of the project is to build a R **Shiny application** able to **predict the next 
+word** in a sentence.
+
+## Input required to build the underlying model
+- Training data were obtained from:
+    + Blogs
+    + News
+    + Tweets
+- The data were cleaned and sampled
+- The Tri-grams, Bi-grams and One-grams of the sample dataset were obtainined 
+together with their frequency
+- The latter were saved as an .RData file <http://rmarkdown.rstudio.com>.
+
+## Model used
+- A Katz's back-off model was implemented
+- The model is used to predict the most probable next word (or words)
+- The model uses bigrams to estimate the probability of seen and unseen trigrams and bigrams. 
+
+## The Shiny app
+- The app is available at the following link...
+- On the left side an input window allows inserting the text to be used for the 
+prediction
+- Then, the submit button has to be pressed
+- On the rigth side the output will display the three most likely words according 
+to the Katz's model together with their associated probability.  
+![alt text](AppScreenshot.jpg){width=70%}
