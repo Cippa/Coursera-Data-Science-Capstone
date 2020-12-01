@@ -1,0 +1,322 @@
+---
+title: "Week 2 Milestone report"
+author: "Fulvio Barizzone"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+    html_document:
+        toc: yes
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+# Libraries
+
+Libraries used.  
+
+```{r libraries, echo=TRUE, message=FALSE}
+library(tidyverse)
+library(tm)
+library(stringr)
+library(stringi)
+library(tidytext)
+library(wordcloud)
+library(RColorBrewer)
+```
+
+R working environment.  
+
+## Session info
+```{r session_info}
+sessionInfo()
+```
+
+
+# Task 1 - Getting and cleaning data
+
+## Load the datasets
+
+```{r load}
+blogs <- readLines(con = "./final/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul = TRUE)
+news <- readLines(con = "./final/en_US/en_US.news.txt", encoding = "UTF-8", skipNul = TRUE)
+twitter <- readLines(con = "./final/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul = TRUE)
+
+```
+
+## Basic understanding of the dataset
+
+I want to have an idea of the general characteristics of the dataset e.g. number 
+of lines, total numaber of words, statistics on the number of wods per line.
+
+```{r dataset_descr}
+# I use the package stringi to obtain the information
+
+WordsPerLine <- sapply(X = list(blogs, news, twitter), FUN = stringi::stri_count_words)
+
+dataset <- data.frame(Source = c("Blogs", "News", "Twitter"),
+                      t(sapply(list(blogs,news,twitter),stri_stats_general)),
+                      TotalWords = t(sapply(list(blogs,news,twitter), stri_stats_latex))[,4],
+                      t(sapply(WordsPerLine, summary)))
+dataset
+
+rm(WordsPerLine)
+```
+
+## Removing non-standard characters
+
+There could be some *non-standard* characters in the text so I only keep the 
+ASCII ones.
+
+```{r remove_nonASCII}
+
+blogs <- iconv(x = blogs, from = "latin1", to = "ASCII", sub = "")
+news <- iconv(x = news, from = "latin1", to = "ASCII", sub = "")
+twitter <- iconv(x = twitter, from = "latin1", to = "ASCII", sub = "")
+```
+
+
+## Create a sample of the dataset
+
+I create a sample of the dataset; I take 5% of each different source. 
+
+```{r sample}
+# I take a random sample of the different sources
+
+set.seed(123)
+
+blogs_sample <- sample(x = blogs, size = length(blogs)*0.05, replace = FALSE)
+news_sample <- sample(x = news, size = length(news)*0.05, replace = FALSE)
+twitter_sample <- sample(x = twitter, size = length(twitter)*0.05, replace = FALSE)
+
+rm(blogs, news, twitter)
+
+# Converting the samples into tidy datasets and adding the info on the source I 
+# do that since I want to use the package tidytext which I've found it simpler for 
+# performing basinc manipulations than tm
+blogs_sampleDF <- tibble(text = blogs_sample, source = "blogs")
+news_sampleDF <- tibble(text = news_sample, source = "news")
+twitter_sampleDF <- tibble(text = twitter_sample, source = "twitter")
+
+# overall_sample <- c(blogs_sample, news_sample, twitter_sample)
+# Creating overall sample by putting together the 3 samples without loosing info
+# on the source of the text
+overall_sampleDF <- bind_rows(blogs_sampleDF, news_sampleDF, twitter_sampleDF)
+
+rm(blogs_sample, news_sample, twitter_sample)
+```
+
+## Profanity filtering
+
+I will use the "unnest_token" function from the tidytext package for tokenisation.
+This function converts to lower case and strips punctuation by default. So the 
+additional profanity filtering needed is minimal. I will just remove numbers. I 
+decided not to remove stopwords on purpose since, giving the final objective of 
+the capstone is to predict words, stopwords are important in this case.
+
+```{r profanity_filtering}
+overall_sampleDF$text <- removeNumbers(overall_sampleDF$text)
+    
+```
+
+
+## Tokenization
+
+I use the *tidytext* package. There is no need to write functions that take a file 
+as input and return tokens of 1-grams, 2-grams and 3-grams words. In fact, this 
+is already done by the *unnest_tokens* function of the *tidytext* package. 
+
+
+```{r tokenization_simple}
+
+oneGrams <- overall_sampleDF %>%
+    unnest_tokens(output = word, input = text) %>%
+    count(word, sort = TRUE) %>%
+    mutate(CumulativeCount = cumsum(n)) %>% 
+    mutate(TotWords = sum(n)) %>%
+    mutate(PercentCoverage = round(CumulativeCount/TotWords*100, digits = 1))
+
+head(oneGrams)
+
+# I will use this data to visualise word clouds by source of info
+oneGramsBySource <- overall_sampleDF %>%
+    group_by( source) %>%
+    unnest_tokens(output = word, input = text) %>%
+    count(word, sort = TRUE)
+
+head(oneGramsBySource)
+
+twoGrams <- overall_sampleDF %>%
+    unnest_tokens(output = TwoGrams, input = text, token = "ngrams", n = 2) %>%
+    count(TwoGrams, sort = TRUE) %>%
+    mutate(CumulativeCount = cumsum(n)) %>%
+    mutate(TotTwoGrams = sum(n))
+
+head(twoGrams)
+
+triGrams <- overall_sampleDF %>%
+    unnest_tokens(output = TriGrams, input = text, token = "ngrams", n = 3) %>%
+    count(TriGrams, sort = TRUE) %>%
+    mutate(CumulativeCount = cumsum(n)) %>%
+    mutate(TotTriGrams = sum(n))
+
+head(triGrams)
+
+tetraGrams <- overall_sampleDF %>%
+    unnest_tokens(output = TetraGrams, input = text, token = "ngrams", n = 4) %>%
+    count(TetraGrams, sort = TRUE) %>%
+    mutate(CumulativeCount = cumsum(n)) %>%
+    mutate(TotTetraGrams = sum(n))
+
+head(tetraGrams)
+
+pentaGrams <- overall_sampleDF %>%
+    unnest_tokens(output = PentaGrams, input = text, token = "ngrams", n = 5) %>%
+    count(PentaGrams, sort = TRUE) %>%
+    mutate(CumulativeCount = cumsum(n)) %>%
+    mutate(TotPentaGrams = sum(n))
+
+head(pentaGrams)
+```
+
+# Task 2 - Exploratory data analysis
+
+## Understanding frequencies of words
+
+I plot the distribution of the first 20 words appearing in the sample dataset.
+
+```{r plotOneGrams}
+
+ggplot(data = oneGrams %>% head(20), mapping = aes(x = reorder(word, n), y = n)) +
+    geom_col(fill = "lightblue2") +
+    labs(title = "Frequency ot top 20 words in the sample", x = "Words", y = "Frequency") +
+    theme_minimal() +
+    coord_flip()
+    
+
+```
+
+I plot the distribution of the first 20 bigrams appearing in the sample dataset.
+
+```{r plotTwoGrams_simple}
+
+ggplot(data = twoGrams %>% head(20), mapping = aes(x = reorder(TwoGrams, n), y = n)) +
+    geom_col(fill = "lightblue2") +
+    labs(title = "Frequency ot top 20 bigrams in the sample", x = "Bigrams", y = "Frequency") +
+    theme_minimal() +
+    coord_flip()
+
+```
+
+I plot the distribution of the first 20 trigrams appearing in the sample dataset.
+
+```{r plotTriGrams_simple}
+
+ggplot(data = triGrams %>% head(20), mapping = aes(x = reorder(TriGrams, n), y = n)) +
+    geom_col(fill = "lightblue2") +
+    labs(title = "Frequency ot top 20 trigrams in the sample", x = "trigrams", y = "Frequency") +
+    theme_minimal() +
+    coord_flip()
+
+```
+
+Overall it seem that the more words are considered in the tokenisation the more 
+the distribution is "flatten". I.e. the single words are dominated by "the" while 
+for 3-grams the graph looks smooter.
+
+```{r coverage50}
+
+perc50 <- oneGrams %>%
+    filter(PercentCoverage >= 50) %>%
+    head(1)
+
+perc50
+
+which(oneGrams$word == perc50$word)
+
+```
+
+You need 124 words to cover 50% of all word intances in the sample and you reach 
+this coverage with the word "lol" that is found 705 times.  
+
+```{r coverage90}
+perc90 <- oneGrams %>%
+    filter(PercentCoverage >= 90) %>%
+    head(1)
+
+perc90
+
+which(oneGrams$word == perc90$word)
+
+```
+
+You need 6125 words to cover 90% of all word intances in the sample and you reach 
+this coverage with the word "avi" that is found 8 times.
+
+## Understanding possible differences between the 3 sources of information
+
+I generate 3 different wordclouds, one per source of information, to roughly check 
+if there are differences in the 3 sources of information.  
+I use the package *wordcloud* and I limit the clouds to 50 most frequent words 
+in each source of information.
+
+```{r wordClouds}
+
+par(mfrow = c(1,3))
+
+oneGramsBySource %>%
+    filter(source == "blogs") %>%
+    with(wordcloud(words = word, freq = n, max.words = 100,random.order = FALSE, 
+                   rot.per = 0.35, colors = brewer.pal(n = 8, name = "Dark2")))
+title("Blogs")
+
+oneGramsBySource %>%
+    filter(source == "news") %>%
+    with(wordcloud(words = word, freq = n, max.words = 100,random.order = FALSE, 
+                   rot.per = 0.35, colors = brewer.pal(n = 8, name = "Dark2")))
+title("News")
+
+oneGramsBySource %>%
+    filter(source == "twitter") %>%
+    with(wordcloud(words = word, freq = n, max.words = 100,random.order = FALSE, 
+                   rot.per = 0.35, colors = brewer.pal(n = 8, name = "Dark2")))
+title("Twitter")
+
+par(mfrow = c(1,1))
+
+```
+
+The word "the" is always the most frequent one. However, there seems to be some 
+differences in the clouds. In particular it seems to be more a more evenly distribution 
+of terminology in the Twitter source compared to Blogs and News.
+
+## Evaluate how many words come from foreign language
+
+I would match the words I have against an english dictionary and keep track of 
+the words available in the dictionary of not.
+
+## Identify a way to increase the coverage 
+
+Probably stemming could increase the coverage.  
+
+# Feedback on plans for creating prediction algorithm
+
+The taks does not look easy for me at the moment.  
+Resources is a key issue, so I will have to pay attention to that.  
+Ideally I could use bi- tri- quadri-grams split them in their different terms and 
+use the firs n-1 terms to predict the probability of the last one. 
+The 3 terms with the higest probabilities could then be used as suggested word for 
+the word that has to be written.  
+That would present challenges in any case since in the training dataset I will not 
+be able to find all the possible combinations of words so I will have to assign 
+probabilities to words not seen in the combinations present in the dataset. I could 
+do that with smooting.  
+Alternatively, if e.g. a tri-gram combination is not present in the training dataset 
+I could roll back to bi-gram or unigrams and provide as suggestion the words with 
+the highest probabilities seen in the bi-grams or unigrams.
+The Shiny app per se does not look particularly complex. The main point here looks 
+to be on saving resources since I believe the standard shiny server that I'm going 
+to use is not particularly powerful.
+
+ 
