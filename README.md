@@ -6,6 +6,6 @@ the Milestone report.
 -    The file [**app.R**](https://github.com/Cippa/Coursera-Data-Science-Capstone/blob/gh-pages/app.R) 
 contains the code for the Shiny app used to predict the 
 word.  
--    The files [**Capstone_Project_Presentation**](https://cippa.github.io/Coursera-Data-Science-Capstone/Capstone_Project_Presentation.html) 
+-    The files [**Capstone_Project_Presentation**](https://rpubs.com/Fulvio/Data_Science_Specialization_Capstone_Presentation) 
 contain the .Rmd and .html versions of the presentation pitch of the app.  
 -    The final **Shiny app** is available at the following [link](https://cippa.shinyapps.io/Coursera-Data-Science-Capstone/)
