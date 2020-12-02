@@ -8,8 +8,9 @@ library(data.table)
 ################################################################################
 # The tables of unigrams, bigrams and trigrams are the objects oneGrams,       #
 # twoGrams and triGrams. They are data.table objects and they are loaded       #
-# directly in the workspace one opening the application.                       #
+# directly in the workspace once opening the application.                       #
 ################################################################################
+load("Ngrams.RData")
 
 ################################################################################
 # Setting discount value                                                       #           
@@ -201,12 +202,16 @@ ui <- fluidPage(
 
     # Application title
     titlePanel("Predicting next word of a sentence using Katz's back-off model"),
+    h4(em("i.e. the non-sense generator ;-)")),
+    h5("Once starting the app just wait a bit for the loading of the datasets"),
 
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
             textInput(inputId = "sentence", label = "Please write a sentence with at leats 2 words and then press the enter button"),
-            submitButton(text = "Submit your sentence!")
+            submitButton(text = "Submit your sentence!"),
+            h4("The documentation of the project is avalable at the following", 
+               em(tags$a(href="https://github.com/Cippa/Coursera-Data-Science-Capstone", "GitHub repo")))
         ),
 
         # Show a plot of the generated distribution
@@ -218,7 +223,7 @@ ui <- fluidPage(
     )
 )
 
-# Define server logic required to draw a histogram
+# Define server logic required to output the predicted word
 server <- function(input, output) {
     output$Table <- renderTable({
         predWord(sentence = input$sentence)
