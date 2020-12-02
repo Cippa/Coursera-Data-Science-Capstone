@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = FALSE)
 ## Goal of the project
 
 The goal of the project is to build a R **Shiny application** able to **predict the next word** 
-in a sentence.
+of a sentence.
 
 ## Input required to build the underlying model
 - Training data were obtained from:
@@ -25,7 +25,7 @@ in a sentence.
 - The data were cleaned and sampled
 - The Tri-grams, Bi-grams and One-grams of the sample dataset were obtainined 
 together with their frequency
-- The latter were saved as an .RData file.
+- The latter were saved as an .RData file
 
 ## Model used
 - A [Katz's back-off model](https://en.wikipedia.org/wiki/Katz%27s_back-off_model) was implemented
@@ -33,9 +33,9 @@ together with their frequency
 - The model uses bigrams to estimate the probability of seen and unseen trigrams 
 and bigrams 
 
-## [The Shiny app](insert link)
-- The app is available at the following [link](insert link)
-- On the left side an input window allows inserting the text to be used for the 
+## [The Shiny app](https://cippa.shinyapps.io/Coursera-Data-Science-Capstone/)
+- The app is available at the following [link](https://cippa.shinyapps.io/Coursera-Data-Science-Capstone/)
+- On the left side an input field allows inserting the text to be used for the 
 prediction
 - Then, the submit button has to be pressed
 - On the rigth side the output will display the three most likely words according 
