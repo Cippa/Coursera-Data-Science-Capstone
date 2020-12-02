@@ -8,3 +8,4 @@ contains the code for the Shiny app used to predict the
 word.  
 -    The files [**Capstone_Project_Presentation**](https://cippa.github.io/Coursera-Data-Science-Capstone/Capstone_Project_Presentation.html) 
 contain the .Rmd and .html versions of the presentation pitch of the app.  
+-    The final **Shiny app** is available at the following [link](https://cippa.shinyapps.io/Coursera-Data-Science-Capstone/)
